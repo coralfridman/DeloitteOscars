@@ -10,7 +10,7 @@ export default function HomePage() {
             Deloitte Oscars
           </p>
           <h1 className="max-w-3xl text-5xl font-black leading-none sm:text-7xl">
-            Run a live voting game.
+            Run a live poll game.
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-white/75">
             Create multi-question polls, share a PIN or QR code, and let players answer with
@@ -22,7 +22,7 @@ export default function HomePage() {
               className="flex min-h-16 items-center justify-center gap-3 rounded-2xl bg-deloitteGreen px-5 text-lg font-black text-ink transition hover:brightness-105"
             >
               <Plus size={24} />
-              Create game
+              Create poll game
             </Link>
             <Link
               href="/join"
