@@ -1,4 +1,4 @@
-export type GameStatus = "lobby" | "live" | "results" | "finished";
+export type GameStatus = "lobby" | "voting" | "revealed" | "finished";
 
 export type Poll = {
   id: string;
@@ -21,13 +21,13 @@ export type Answer = {
   label: string;
   color: "red" | "blue" | "yellow" | "green";
   shape: "triangle" | "diamond" | "circle" | "square";
-  is_correct: boolean;
 };
 
 export type Game = {
   id: string;
   poll_id: string;
   code: string;
+  host_token_hash: string;
   status: GameStatus;
   current_question_id: string | null;
   question_started_at: string | null;
@@ -48,8 +48,6 @@ export type Submission = {
   player_id: string;
   question_id: string;
   answer_id: string;
-  is_correct: boolean;
-  response_ms: number;
   points_awarded: number;
   created_at: string;
 };
