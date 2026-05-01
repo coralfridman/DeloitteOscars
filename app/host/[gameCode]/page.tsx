@@ -38,7 +38,7 @@ export default function HostPage() {
           supabase
             .from("questions")
             .select("*, answers(*)")
-            .eq("quiz_id", gameRow.quiz_id)
+            .eq("poll_id", gameRow.poll_id)
             .order("position"),
           supabase.from("players").select("*").eq("game_id", gameRow.id).order("score", { ascending: false }),
           supabase.from("submissions").select("*").eq("game_id", gameRow.id)
@@ -134,7 +134,7 @@ export default function HostPage() {
         <div className="rounded-[28px] bg-white p-7 text-center shadow-soft">
           <h1 className="text-3xl font-black">Host screen not found</h1>
           <Link href="/create" className="mt-4 inline-block font-black text-deloitteGreen">
-            Create a game
+            Create a poll game
           </Link>
         </div>
       </main>
