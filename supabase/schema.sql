@@ -1,4 +1,4 @@
-create extension if not exists pgcrypto;
+create extension if not exists pgcrypto with schema extensions;
 
 -- Destructive reset for a clean mobile-first poll-game database.
 -- This deletes existing Deloitte Oscars game data.
@@ -108,7 +108,7 @@ returns boolean
 language sql
 stable
 as $$
-  select p_game.host_token_hash = encode(digest(coalesce(p_host_token, ''), 'sha256'), 'hex');
+  select p_game.host_token_hash = encode(extensions.digest(coalesce(p_host_token, ''), 'sha256'), 'hex');
 $$;
 
 create or replace function public.open_question(
