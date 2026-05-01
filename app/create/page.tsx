@@ -13,7 +13,6 @@ type DraftAnswer = {
 type DraftQuestion = {
   prompt: string;
   backgroundImageUrl: string;
-  timeLimitSeconds: number;
   answers: DraftAnswer[];
 };
 
@@ -37,15 +36,13 @@ const templateHeaders = [
   "Answer 8",
   "Answer 9",
   "Answer 10",
-  "Background Image URL",
-  "Time Limit Seconds"
+  "Background Image URL"
 ];
 
 function blankQuestion(): DraftQuestion {
   return {
     prompt: "",
     backgroundImageUrl: "",
-    timeLimitSeconds: 20,
     answers: [{ label: "" }, { label: "" }, { label: "" }, { label: "" }]
   };
 }
@@ -71,8 +68,7 @@ export default function CreatePage() {
         "",
         "",
         "",
-        "https://images.unsplash.com/photo-1511578314322-379afb476865",
-        "20"
+        "https://images.unsplash.com/photo-1511578314322-379afb476865"
       ]
     ];
   }, []);
@@ -119,8 +115,7 @@ export default function CreatePage() {
       poll_id: poll.id,
       prompt: question.prompt.trim(),
       background_image_url: question.backgroundImageUrl.trim() || null,
-      position: index,
-      time_limit_seconds: question.timeLimitSeconds
+      position: index
     }));
 
     const { data: createdQuestions, error: questionsError } = await supabase
@@ -244,7 +239,6 @@ export default function CreatePage() {
 
     const header = rows[0].map((cell) => String(cell).trim().toLowerCase());
     const questionIndex = header.indexOf("question");
-    const timeIndex = header.indexOf("time limit seconds");
     const backgroundIndex = header.indexOf("background image url");
     const answerIndexes = Array.from({ length: 10 }, (_, index) =>
       header.indexOf(`answer ${index + 1}`)
@@ -262,17 +256,12 @@ export default function CreatePage() {
         .map((index) => String(row[index] || "").trim())
         .filter(Boolean)
         .slice(0, 10);
-      const timeLimitSeconds = Math.min(
-        120,
-        Math.max(5, Number(String(row[timeIndex] || "").trim() || 20) || 20)
-      );
       const backgroundImageUrl =
         backgroundIndex === -1 ? "" : String(row[backgroundIndex] || "").trim();
 
       return {
         prompt,
         backgroundImageUrl,
-        timeLimitSeconds,
         answers: answerLabels.map((label) => ({ label }))
       };
     });
@@ -337,7 +326,7 @@ export default function CreatePage() {
                 <h2 className="text-xl font-black">Import from Excel</h2>
                 <p className="mt-1 text-sm font-medium text-slate-500">
                   Download the template, fill it in Excel, then upload it here. After upload,
-                  review backgrounds and timers before creating the poll game.
+                  review backgrounds before creating the poll game.
                 </p>
               </div>
               <button
@@ -378,7 +367,7 @@ export default function CreatePage() {
               </p>
               <h2 className="mt-1 text-2xl font-black">Review imported questions</h2>
               <p className="mt-1 text-sm font-medium text-slate-500">
-                Add or replace background image URLs, tune timers, then create the poll game.
+                Add or replace background image URLs, then create the poll game.
               </p>
             </section>
           )}
@@ -432,21 +421,6 @@ export default function CreatePage() {
                   </p>
                 </div>
               )}
-              <label className="mt-3 block text-sm font-bold text-slate-500">
-                Time limit
-                <input
-                  type="number"
-                  min={5}
-                  max={120}
-                  value={question.timeLimitSeconds}
-                  onChange={(event) =>
-                    updateQuestion(questionIndex, {
-                      timeLimitSeconds: Number(event.target.value)
-                    })
-                  }
-                  className="mt-1 h-11 w-full rounded-xl border border-slate-200 px-3 text-ink"
-                />
-              </label>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {question.answers.map((answer, answerIndex) => (
                   <label
