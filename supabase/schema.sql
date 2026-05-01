@@ -26,7 +26,6 @@ create table public.questions (
   prompt text not null,
   background_image_url text,
   position int not null,
-  time_limit_seconds int not null default 20,
   created_at timestamptz not null default now()
 );
 
@@ -46,7 +45,6 @@ create table public.games (
   host_token_hash text not null,
   status text not null default 'lobby' check (status in ('lobby', 'voting', 'revealed', 'finished')),
   current_question_id uuid references public.questions(id) on delete set null,
-  question_started_at timestamptz,
   created_at timestamptz not null default now()
 );
 
@@ -148,8 +146,7 @@ begin
 
   update public.games
   set status = 'voting',
-      current_question_id = p_question_id,
-      question_started_at = now()
+      current_question_id = p_question_id
   where id = v_game.id
   returning * into v_game;
 
