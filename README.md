@@ -11,6 +11,7 @@ This is the product direction:
 - Results stay hidden from participants until the host reveals them.
 - Revealed results appear on participant phones as bars and percentages.
 - Participation scoring awards 100 points for each submitted vote.
+- The host controls the pace manually.
 
 ## Routes
 
@@ -28,9 +29,8 @@ Template columns:
 - `Question`
 - `Answer 1` through `Answer 10`
 - `Background Image URL`
-- `Time Limit Seconds`
 
-After bulk upload, the creator stays on `/create` in a design review state to edit question text, answers, timers, and background images before hosting.
+After bulk upload, the creator stays on `/create` in a design review state to edit question text, answers, and background images before hosting.
 
 ## Setup
 
