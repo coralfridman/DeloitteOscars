@@ -1,6 +1,6 @@
 export type GameStatus = "lobby" | "live" | "results" | "finished";
 
-export type Quiz = {
+export type Poll = {
   id: string;
   title: string;
   created_at: string;
@@ -8,7 +8,7 @@ export type Quiz = {
 
 export type Question = {
   id: string;
-  quiz_id: string;
+  poll_id: string;
   prompt: string;
   background_image_url: string | null;
   position: number;
@@ -26,7 +26,7 @@ export type Answer = {
 
 export type Game = {
   id: string;
-  quiz_id: string;
+  poll_id: string;
   code: string;
   status: GameStatus;
   current_question_id: string | null;
