@@ -1,25 +1,72 @@
 # Deloitte Oscars
 
-Streamlit polling app for creating polls, sharing them by QR code, collecting named votes, and showing the winner.
+A Kahoot-style real-time polling game built with Next.js 15, Tailwind CSS, and Supabase.
 
-## Deploy on Streamlit Community Cloud
+This is the product direction:
 
-Use these settings:
+- Host creates a multi-question game.
+- Each question can include a background image URL.
+- Players join with a PIN or QR code.
+- Host controls the live question progression.
+- Players answer using color-coded answer tiles.
+- Supabase Realtime updates the host and players without manual refresh.
+- Scoring is based on correctness and response speed.
 
-- Repository: `coralfridman/DeloitteOscars`
-- Branch: `main`
-- Main file path: `app.py`
+## Routes
 
-## Features
+- `/create` - Create a multi-question game.
+- `/{gameCode}` - Player join and answer screen.
+- `/host/{gameCode}` - Host screen with PIN, QR code, live question, and leaderboard.
 
-- Create polls with multiple answer options
-- Generate share links and QR codes
-- Voters enter their name before voting
-- Admin can allow multiple answers, require one vote per name, and show/hide voter names
-- Results auto-refresh while poll/admin pages are open
-- Winner is calculated from the most votes
-- Hebrew / English interface
+## Excel Import
 
-## Persistence note
+The create screen can download an Excel template, then import completed `.xlsx`, `.xls`, or `.csv` files.
 
-This version stores poll data in `polls.json` on the Streamlit server. Streamlit Community Cloud may reset local files when the app restarts. For long-term production use, connect a hosted database such as Supabase, Neon, Firebase, or Google Sheets.
+Template columns:
+
+- `Question`
+- `Correct Answer`
+- `Answer 1` through `Answer 10`
+- `Background Image URL`
+- `Time Limit Seconds`
+
+After bulk upload, the creator stays on `/create` in a design review state to edit question text, answers, timers, and background images before hosting.
+
+## Setup
+
+1. Create a Supabase project.
+2. Run `supabase/schema.sql` in the Supabase SQL editor.
+3. Copy `.env.example` to `.env.local` and fill:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```
+
+4. Install and run:
+
+```bash
+npm install
+npm run dev
+```
+
+## Realtime
+
+The app subscribes to Supabase Realtime changes on:
+
+- `games`
+- `players`
+- `submissions`
+
+Scores are calculated by the `submit_answer` Postgres RPC based on correctness and response speed.
+
+## Deployment
+
+Deploy on Vercel or any Next.js host.
+
+Required environment variables:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+```

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Poll Winner</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="/" aria-label="Poll Winner">
+          <span class="brand-mark">PW</span>
+          <span data-i18n="brand">Poll Winner</span>
+        </a>
+        <div class="topbar-actions">
+          <button class="icon-button" id="langToggle" type="button" title="Language">עב</button>
+          <a class="ghost-button" href="/" data-i18n="newPoll">סקר חדש</a>
+        </div>
+      </header>
+
+      <main>
+        <section class="workspace" id="builderView">
+          <div class="panel builder-panel">
+            <div class="panel-heading">
+              <p class="eyebrow" data-i18n="builderEyebrow">יצירת סקר</p>
+              <h1 data-i18n="builderTitle">בונים סקר, משתפים ב־QR, ורואים מנצח בזמן אמת.</h1>
+            </div>
+
+            <form id="pollForm" class="form-stack">
+              <label class="field">
+                <span data-i18n="questionLabel">שאלה</span>
+                <input id="questionInput" maxlength="160" data-i18n-placeholder="questionPlaceholder" placeholder="מה נאכל הערב?" required />
+              </label>
+
+              <div class="option-editor">
+                <div class="row-between">
+                  <span class="label-text" data-i18n="answersLabel">תשובות</span>
+                  <button class="small-button" id="addOptionButton" type="button" data-i18n="addAnswer">הוספת תשובה</button>
+                </div>
+                <div id="optionsList" class="options-list"></div>
+              </div>
+
+              <div class="settings-grid">
+                <label class="switch-line">
+                  <input id="allowMultipleAnswers" type="checkbox" checked />
+                  <span data-i18n="allowMultiple">אפשר לבחור כמה תשובות</span>
+                </label>
+                <label class="switch-line">
+                  <input id="oneVotePerName" type="checkbox" checked />
+                  <span data-i18n="oneVote">הצבעה אחת לכל שם</span>
+                </label>
+                <label class="switch-line">
+                  <input id="showVoters" type="checkbox" />
+                  <span data-i18n="showVoters">להציג שמות מצביעים לכולם</span>
+                </label>
+              </div>
+
+              <button class="primary-button" type="submit" data-i18n="createPoll">יצירת סקר</button>
+              <p class="status-line" id="builderStatus"></p>
+            </form>
+          </div>
+
+          <aside class="panel preview-panel">
+            <p class="eyebrow" data-i18n="previewEyebrow">תצוגה</p>
+            <div class="phone-preview">
+              <div class="phone-header"></div>
+              <h2 id="previewQuestion">מה נאכל הערב?</h2>
+              <div id="previewOptions" class="preview-options"></div>
+            </div>
+          </aside>
+        </section>
+
+        <section class="workspace hidden" id="pollView">
+          <div class="panel vote-panel">
+            <div class="panel-heading">
+              <p class="eyebrow" data-i18n="livePoll">סקר חי</p>
+              <h1 id="pollQuestion"></h1>
+            </div>
+
+            <form id="voteForm" class="form-stack">
+              <label class="field">
+                <span data-i18n="nameLabel">השם שלך</span>
+                <input id="voterName" maxlength="60" data-i18n-placeholder="namePlaceholder" placeholder="דנה" required />
+              </label>
+              <div id="voteOptions" class="vote-options"></div>
+              <button class="primary-button" type="submit" data-i18n="voteButton">הצבעה</button>
+              <p class="status-line" id="voteStatus"></p>
+            </form>
+          </div>
+
+          <aside class="panel results-panel">
+            <div class="row-between">
+              <div>
+                <p class="eyebrow" data-i18n="results">תוצאות</p>
+                <h2 id="winnerTitle" data-i18n="waitingWinner">מחכים להצבעות</h2>
+              </div>
+              <span class="count-pill" id="votesCount">0</span>
+            </div>
+            <div id="resultsList" class="results-list"></div>
+          </aside>
+        </section>
+
+        <section class="workspace hidden" id="adminView">
+          <div class="panel admin-panel">
+            <div class="panel-heading">
+              <p class="eyebrow" data-i18n="admin">ניהול</p>
+              <h1 id="adminQuestion"></h1>
+            </div>
+
+            <div class="share-grid">
+              <canvas id="qrCanvas" width="296" height="296" aria-label="QR"></canvas>
+              <div class="share-actions">
+                <label class="field">
+                  <span data-i18n="shareLink">קישור לשיתוף</span>
+                  <input id="shareLink" readonly />
+                </label>
+                <button class="secondary-button" id="copyLinkButton" type="button" data-i18n="copyLink">העתקת קישור</button>
+              </div>
+            </div>
+
+            <form id="adminSettings" class="settings-grid admin-settings">
+              <label class="switch-line">
+                <input id="adminAllowMultiple" type="checkbox" />
+                <span data-i18n="allowMultiple">אפשר לבחור כמה תשובות</span>
+              </label>
+              <label class="switch-line">
+                <input id="adminOneVote" type="checkbox" />
+                <span data-i18n="oneVote">הצבעה אחת לכל שם</span>
+              </label>
+              <label class="switch-line">
+                <input id="adminShowVoters" type="checkbox" />
+                <span data-i18n="showVoters">להציג שמות מצביעים לכולם</span>
+              </label>
+              <button class="primary-button" type="submit" data-i18n="saveSettings">שמירת הגדרות</button>
+              <p class="status-line" id="adminStatus"></p>
+            </form>
+          </div>
+
+          <aside class="panel results-panel">
+            <div class="row-between">
+              <div>
+                <p class="eyebrow" data-i18n="results">תוצאות</p>
+                <h2 id="adminWinnerTitle" data-i18n="waitingWinner">מחכים להצבעות</h2>
+              </div>
+              <span class="count-pill" id="adminVotesCount">0</span>
+            </div>
+            <div id="adminResultsList" class="results-list"></div>
+          </aside>
+        </section>
+      </main>
+    </div>
+
+    <script src="/qr.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>
