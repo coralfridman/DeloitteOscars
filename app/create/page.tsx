@@ -97,26 +97,26 @@ export default function CreatePage() {
   async function saveGame(event: FormEvent) {
     event.preventDefault();
     if (!canSave) {
-      setError("Each question needs a prompt, at least two answers, and one correct answer.");
+      setError("Each poll question needs a prompt, at least two answers, and one correct answer.");
       return;
     }
     setIsSaving(true);
     setError("");
 
-    const { data: quiz, error: quizError } = await supabase
-      .from("quizzes")
+    const { data: poll, error: pollError } = await supabase
+      .from("polls")
       .insert({ title: title.trim() })
       .select("id")
       .single();
 
-    if (quizError || !quiz) {
-      setError(quizError?.message || "Could not create quiz.");
+    if (pollError || !poll) {
+      setError(pollError?.message || "Could not create poll game.");
       setIsSaving(false);
       return;
     }
 
     const questionRows = questions.map((question, index) => ({
-      quiz_id: quiz.id,
+      poll_id: poll.id,
       prompt: question.prompt.trim(),
       background_image_url: question.backgroundImageUrl.trim() || null,
       position: index,
@@ -156,7 +156,7 @@ export default function CreatePage() {
 
     const code = createGameCode();
     const { error: gameError } = await supabase.from("games").insert({
-      quiz_id: quiz.id,
+      poll_id: poll.id,
       code,
       status: "lobby"
     });
@@ -295,12 +295,12 @@ export default function CreatePage() {
           <p className="text-sm font-black uppercase tracking-[0.18em] text-deloitteGreen">
             Create
           </p>
-          <h1 className="mt-2 text-4xl font-black sm:text-6xl">Build the game</h1>
+          <h1 className="mt-2 text-4xl font-black sm:text-6xl">Build the poll game</h1>
           <input
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             className="mt-6 h-14 w-full rounded-2xl border border-white/10 bg-white/10 px-4 text-xl font-black outline-none placeholder:text-white/40"
-            placeholder="Game title"
+            placeholder="Poll game title"
           />
         </div>
 
@@ -311,7 +311,7 @@ export default function CreatePage() {
                 <h2 className="text-xl font-black">Import from Excel</h2>
                 <p className="mt-1 text-sm font-medium text-slate-500">
                   Download the template, fill it in Excel, then upload it here. After upload,
-                  review backgrounds and styling before creating the game.
+                  review backgrounds and styling before creating the poll game.
                 </p>
               </div>
               <button
@@ -352,7 +352,7 @@ export default function CreatePage() {
               </p>
               <h2 className="mt-1 text-2xl font-black">Review imported questions</h2>
               <p className="mt-1 text-sm font-medium text-slate-500">
-                Add or replace background image URLs, tune timers, then create the game.
+                Add or replace background image URLs, tune timers, then create the poll game.
               </p>
             </section>
           )}
