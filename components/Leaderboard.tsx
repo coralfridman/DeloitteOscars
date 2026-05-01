@@ -1,11 +1,12 @@
 import { Player } from "@/lib/types";
 
 export function Leaderboard({ players }: { players: Player[] }) {
-  const sorted = [...players].sort((a, b) => b.score - a.score);
+  const sorted = [...players].sort((a, b) => b.score - a.score || a.joined_at.localeCompare(b.joined_at));
 
   return (
     <div className="rounded-[24px] bg-white p-5 shadow-soft">
-      <h2 className="text-2xl font-black">Leaderboard</h2>
+      <h2 className="text-2xl font-black">Participation Board</h2>
+      <p className="mt-1 text-sm font-bold text-slate-500">100 points for each poll vote.</p>
       <div className="mt-4 grid gap-2">
         {sorted.length === 0 && <p className="text-slate-500">Waiting for players...</p>}
         {sorted.map((player, index) => (
