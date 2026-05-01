@@ -1,20 +1,20 @@
 # Deloitte Oscars
 
-A Kahoot-style real-time polling game built with Next.js 15, Tailwind CSS, and Supabase.
+A Kahoot-style real-time poll game built with Next.js 15, Tailwind CSS, and Supabase.
 
 This is the product direction:
 
-- Host creates a multi-question game.
+- Host creates a multi-question poll game.
 - Each question can include a background image URL.
 - Players join with a PIN or QR code.
 - Host controls the live question progression.
 - Players answer using color-coded answer tiles.
 - Supabase Realtime updates the host and players without manual refresh.
-- Scoring is based on correctness and response speed.
+- Scoring is based on the selected correct answer and response speed.
 
 ## Routes
 
-- `/create` - Create a multi-question game.
+- `/create` - Create a multi-question poll game.
 - `/{gameCode}` - Player join and answer screen.
 - `/host/{gameCode}` - Host screen with PIN, QR code, live question, and leaderboard.
 
