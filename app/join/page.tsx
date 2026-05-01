@@ -20,8 +20,8 @@ export default function JoinPage() {
         <p className="text-sm font-black uppercase tracking-[0.18em] text-deloitteGreen">
           Deloitte Oscars
         </p>
-        <h1 className="mt-2 text-4xl font-black">Join the game</h1>
-        <p className="mt-2 text-slate-500">Enter the PIN shown on the host screen.</p>
+        <h1 className="mt-2 text-4xl font-black">Join the poll game</h1>
+        <p className="mt-2 text-slate-500">Enter the PIN shared by the host.</p>
         <input
           value={code}
           onChange={(event) => setCode(event.target.value)}
