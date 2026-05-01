@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { BarChart3, ChevronRight, Eye, Play, Square } from "lucide-react";
@@ -249,7 +250,7 @@ export default function HostPage() {
   );
 }
 
-function ControlCard({ title, detail, children }: { title: string; detail: string; children: React.ReactNode }) {
+function ControlCard({ title, detail, children }: { title: string; detail: string; children: ReactNode }) {
   return (
     <div className="rounded-[28px] bg-white p-6 shadow-soft">
       <h2 className="text-4xl font-black">{title}</h2>
@@ -268,7 +269,7 @@ function QuestionCard({
   question: QuestionWithAnswers;
   index: number;
   total: number;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <div
