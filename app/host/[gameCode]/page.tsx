@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { BarChart3, ChevronRight, Eye, Play, Square } from "lucide-react";
+import { FinalResults } from "@/components/FinalResults";
 import { Leaderboard } from "@/components/Leaderboard";
 import { normalizeGameCode } from "@/lib/game-code";
 import { supabase } from "@/lib/supabase";
@@ -238,8 +239,8 @@ export default function HostPage() {
         )}
 
         {game.status === "finished" && (
-          <ControlCard title="Finished" detail="Final participation summary">
-            <Leaderboard players={players} />
+          <ControlCard title="Finished" detail="Top-voted answers by poll">
+            <FinalResults questions={questions} submissions={submissions} />
           </ControlCard>
         )}
 
