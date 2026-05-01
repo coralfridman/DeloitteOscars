@@ -1,14 +1,25 @@
 create extension if not exists pgcrypto;
 
-create table if not exists public.quizzes (
+-- Destructive reset for a clean poll-game database.
+-- This deletes existing Deloitte Oscars game data.
+drop function if exists public.submit_answer(uuid, uuid, uuid, uuid);
+drop table if exists public.submissions cascade;
+drop table if exists public.players cascade;
+drop table if exists public.games cascade;
+drop table if exists public.answers cascade;
+drop table if exists public.questions cascade;
+drop table if exists public.quizzes cascade;
+drop table if exists public.polls cascade;
+
+create table public.polls (
   id uuid primary key default gen_random_uuid(),
   title text not null,
   created_at timestamptz not null default now()
 );
 
-create table if not exists public.questions (
+create table public.questions (
   id uuid primary key default gen_random_uuid(),
-  quiz_id uuid not null references public.quizzes(id) on delete cascade,
+  poll_id uuid not null references public.polls(id) on delete cascade,
   prompt text not null,
   background_image_url text,
   position int not null,
@@ -16,10 +27,7 @@ create table if not exists public.questions (
   created_at timestamptz not null default now()
 );
 
-alter table public.questions
-  add column if not exists background_image_url text;
-
-create table if not exists public.answers (
+create table public.answers (
   id uuid primary key default gen_random_uuid(),
   question_id uuid not null references public.questions(id) on delete cascade,
   label text not null,
@@ -29,9 +37,9 @@ create table if not exists public.answers (
   created_at timestamptz not null default now()
 );
 
-create table if not exists public.games (
+create table public.games (
   id uuid primary key default gen_random_uuid(),
-  quiz_id uuid not null references public.quizzes(id) on delete cascade,
+  poll_id uuid not null references public.polls(id) on delete cascade,
   code text not null unique,
   status text not null default 'lobby' check (status in ('lobby', 'live', 'results', 'finished')),
   current_question_id uuid references public.questions(id) on delete set null,
@@ -39,7 +47,7 @@ create table if not exists public.games (
   created_at timestamptz not null default now()
 );
 
-create table if not exists public.players (
+create table public.players (
   id uuid primary key default gen_random_uuid(),
   game_id uuid not null references public.games(id) on delete cascade,
   name text not null,
@@ -48,7 +56,7 @@ create table if not exists public.players (
   unique (game_id, name)
 );
 
-create table if not exists public.submissions (
+create table public.submissions (
   id uuid primary key default gen_random_uuid(),
   game_id uuid not null references public.games(id) on delete cascade,
   player_id uuid not null references public.players(id) on delete cascade,
@@ -61,34 +69,32 @@ create table if not exists public.submissions (
   unique (game_id, player_id, question_id)
 );
 
-alter table public.quizzes enable row level security;
+alter table public.polls enable row level security;
 alter table public.questions enable row level security;
 alter table public.answers enable row level security;
 alter table public.games enable row level security;
 alter table public.players enable row level security;
 alter table public.submissions enable row level security;
 
-drop policy if exists "public read quizzes" on public.quizzes;
-drop policy if exists "public write quizzes" on public.quizzes;
-drop policy if exists "public read questions" on public.questions;
-drop policy if exists "public write questions" on public.questions;
-drop policy if exists "public read answers" on public.answers;
-drop policy if exists "public write answers" on public.answers;
-drop policy if exists "public read games" on public.games;
-drop policy if exists "public write games" on public.games;
-drop policy if exists "public read players" on public.players;
-drop policy if exists "public write players" on public.players;
-drop policy if exists "public read submissions" on public.submissions;
-drop policy if exists "public write submissions" on public.submissions;
+grant usage on schema public to anon, authenticated;
+grant select, insert, update on public.polls to anon, authenticated;
+grant select, insert, update on public.questions to anon, authenticated;
+grant select, insert, update on public.answers to anon, authenticated;
+grant select, insert, update on public.games to anon, authenticated;
+grant select, insert, update on public.players to anon, authenticated;
+grant select, insert, update on public.submissions to anon, authenticated;
 
-create policy "public read quizzes" on public.quizzes for select using (true);
-create policy "public write quizzes" on public.quizzes for insert with check (true);
+create policy "public read polls" on public.polls for select using (true);
+create policy "public write polls" on public.polls for insert with check (true);
+create policy "public update polls" on public.polls for update using (true) with check (true);
 
 create policy "public read questions" on public.questions for select using (true);
 create policy "public write questions" on public.questions for insert with check (true);
+create policy "public update questions" on public.questions for update using (true) with check (true);
 
 create policy "public read answers" on public.answers for select using (true);
 create policy "public write answers" on public.answers for insert with check (true);
+create policy "public update answers" on public.answers for update using (true) with check (true);
 
 create policy "public read games" on public.games for select using (true);
 create policy "public write games" on public.games for insert with check (true);
@@ -100,6 +106,7 @@ create policy "public update players" on public.players for update using (true) 
 
 create policy "public read submissions" on public.submissions for select using (true);
 create policy "public write submissions" on public.submissions for insert with check (true);
+create policy "public update submissions" on public.submissions for update using (true) with check (true);
 
 create or replace function public.submit_answer(
   p_game_id uuid,
@@ -174,11 +181,14 @@ begin
 end;
 $$;
 
+grant execute on function public.submit_answer(uuid, uuid, uuid, uuid) to anon, authenticated;
+
 do $$
 begin
   alter publication supabase_realtime add table public.games;
 exception
   when duplicate_object then null;
+  when undefined_object then null;
 end;
 $$;
 
@@ -187,6 +197,7 @@ begin
   alter publication supabase_realtime add table public.players;
 exception
   when duplicate_object then null;
+  when undefined_object then null;
 end;
 $$;
 
@@ -195,5 +206,6 @@ begin
   alter publication supabase_realtime add table public.submissions;
 exception
   when duplicate_object then null;
+  when undefined_object then null;
 end;
 $$;
