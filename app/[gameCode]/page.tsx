@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import clsx from "clsx";
 import { BarChart3 } from "lucide-react";
 import { AnswerButton } from "@/components/AnswerButton";
+import { FinalResults } from "@/components/FinalResults";
 import { normalizeGameCode } from "@/lib/game-code";
 import { supabase } from "@/lib/supabase";
 import { Answer, Game, Player, QuestionWithAnswers, Submission, answerStyles, shapeIcon } from "@/lib/types";
@@ -14,6 +15,7 @@ export default function PlayerPage() {
   const gameCode = normalizeGameCode(params.gameCode);
   const [game, setGame] = useState<Game | null>(null);
   const [question, setQuestion] = useState<QuestionWithAnswers | null>(null);
+  const [questions, setQuestions] = useState<QuestionWithAnswers[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [player, setPlayer] = useState<Player | null>(null);
@@ -53,9 +55,28 @@ export default function PlayerPage() {
   }, [gameCode]);
 
   useEffect(() => {
+    async function loadQuestions() {
+      if (!game?.poll_id) return;
+      const { data } = await supabase
+        .from("questions")
+        .select("*, answers(*)")
+        .eq("poll_id", game.poll_id)
+        .order("position");
+      setQuestions((data || []) as QuestionWithAnswers[]);
+    }
+
+    loadQuestions();
+  }, [game?.poll_id]);
+
+  useEffect(() => {
     async function loadQuestion() {
       if (!game?.current_question_id) {
         setQuestion(null);
+        return;
+      }
+      const knownQuestion = questions.find((row) => row.id === game.current_question_id);
+      if (knownQuestion) {
+        setQuestion(knownQuestion);
         return;
       }
       const { data: questionRow } = await supabase
@@ -67,7 +88,7 @@ export default function PlayerPage() {
     }
 
     loadQuestion();
-  }, [game?.current_question_id]);
+  }, [game?.current_question_id, questions]);
 
   useEffect(() => {
     if (!game?.id) return;
@@ -202,13 +223,17 @@ export default function PlayerPage() {
 
   if (game.status === "finished") {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-fog px-4 py-8">
-        <section className="w-full max-w-xl rounded-[28px] bg-white p-7 text-center shadow-soft">
-          <p className="text-sm font-black uppercase tracking-[0.18em] text-deloitteGreen">
-            Final
-          </p>
-          <h1 className="mt-2 text-5xl font-black">Thanks for playing</h1>
-          <p className="mt-3 text-2xl font-black text-deloitteGreen">{player.score} participation points</p>
+      <main className="min-h-screen bg-fog px-4 py-6">
+        <section className="mx-auto max-w-xl">
+          <div className="rounded-[28px] bg-ink p-6 text-white shadow-soft">
+            <p className="text-sm font-black uppercase tracking-[0.18em] text-deloitteGreen">
+              Final
+            </p>
+            <h1 className="mt-2 text-4xl font-black">Thanks for playing</h1>
+          </div>
+          <div className="mt-5">
+            <FinalResults questions={questions} submissions={submissions} />
+          </div>
         </section>
       </main>
     );
