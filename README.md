@@ -1,22 +1,23 @@
 # Deloitte Oscars
 
-A Kahoot-style real-time poll game built with Next.js 15, Tailwind CSS, and Supabase.
+A mobile-first real-time poll game built with Next.js 15, Tailwind CSS, and Supabase.
 
 This is the product direction:
 
-- Host creates a multi-question poll game.
-- Each question can include a background image URL.
-- Players join with a PIN or QR code.
-- Host controls the live question progression.
-- Players answer using color-coded answer tiles.
-- Supabase Realtime updates the host and players without manual refresh.
-- Scoring is based on the selected correct answer and response speed.
+- Host creates a multi-question poll game from a phone or laptop.
+- The app generates a public participant link/PIN and a private host control link.
+- Participants join from their own phones and vote once per poll question.
+- The host opens voting, reveals results, and advances questions from a mobile control panel.
+- Results stay hidden from participants until the host reveals them.
+- Revealed results appear on participant phones as bars and percentages.
+- Participation scoring awards 100 points for each submitted vote.
 
 ## Routes
 
-- `/create` - Create a multi-question poll game.
-- `/{gameCode}` - Player join and answer screen.
-- `/host/{gameCode}` - Host screen with PIN, QR code, live question, and leaderboard.
+- `/create` - Create a multi-question poll game and receive host/participant links.
+- `/join` - Enter a PIN shared by the host.
+- `/{gameCode}` - Participant join, vote, wait, and result screen.
+- `/host/{gameCode}?token=...` - Private host mobile control panel.
 
 ## Excel Import
 
@@ -25,7 +26,6 @@ The create screen can download an Excel template, then import completed `.xlsx`,
 Template columns:
 
 - `Question`
-- `Correct Answer`
 - `Answer 1` through `Answer 10`
 - `Background Image URL`
 - `Time Limit Seconds`
@@ -35,7 +35,7 @@ After bulk upload, the creator stays on `/create` in a design review state to ed
 ## Setup
 
 1. Create a Supabase project.
-2. Run `supabase/schema.sql` in the Supabase SQL editor.
+2. Run `supabase/schema.sql` in the Supabase SQL editor. This is a destructive reset script for the current demo build.
 3. Copy `.env.example` to `.env.local` and fill:
 
 ```bash
@@ -58,7 +58,7 @@ The app subscribes to Supabase Realtime changes on:
 - `players`
 - `submissions`
 
-Scores are calculated by the `submit_answer` Postgres RPC based on correctness and response speed.
+Host controls use private-token RPC functions. Participants can vote only while a question is in the `voting` state.
 
 ## Deployment
 
