@@ -1,14 +1,13 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Download, FileUp, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { Download, ExternalLink, FileUp, Link2, Plus, Trash2 } from "lucide-react";
 import { createGameCode } from "@/lib/game-code";
 import { supabase } from "@/lib/supabase";
 
 type DraftAnswer = {
   label: string;
-  isCorrect: boolean;
 };
 
 type DraftQuestion = {
@@ -18,11 +17,16 @@ type DraftQuestion = {
   answers: DraftAnswer[];
 };
 
+type CreatedLinks = {
+  code: string;
+  hostUrl: string;
+  participantUrl: string;
+};
+
 const colors = ["red", "blue", "yellow", "green"] as const;
 const shapes = ["triangle", "diamond", "circle", "square"] as const;
 const templateHeaders = [
   "Question",
-  "Correct Answer",
   "Answer 1",
   "Answer 2",
   "Answer 3",
@@ -42,27 +46,21 @@ function blankQuestion(): DraftQuestion {
     prompt: "",
     backgroundImageUrl: "",
     timeLimitSeconds: 20,
-    answers: [
-      { label: "", isCorrect: true },
-      { label: "", isCorrect: false },
-      { label: "", isCorrect: false },
-      { label: "", isCorrect: false }
-    ]
+    answers: [{ label: "" }, { label: "" }, { label: "" }, { label: "" }]
   };
 }
 
 export default function CreatePage() {
-  const router = useRouter();
   const [title, setTitle] = useState("Deloitte Oscars");
   const [questions, setQuestions] = useState<DraftQuestion[]>([blankQuestion()]);
   const [designReview, setDesignReview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
+  const [createdLinks, setCreatedLinks] = useState<CreatedLinks | null>(null);
   const templateRows = useMemo(() => {
     return [
       [
         "Who should win best team moment?",
-        "Launch day",
         "Launch day",
         "Client save",
         "All hands",
@@ -87,9 +85,7 @@ export default function CreatePage() {
       title.trim().length > 0 &&
       questions.every(
         (question) =>
-          question.prompt.trim() &&
-          question.answers.filter((answer) => answer.label.trim()).length >= 2 &&
-          question.answers.some((answer) => answer.label.trim() && answer.isCorrect)
+          question.prompt.trim() && question.answers.filter((answer) => answer.label.trim()).length >= 2
       )
     );
   }, [questions, title]);
@@ -97,11 +93,15 @@ export default function CreatePage() {
   async function saveGame(event: FormEvent) {
     event.preventDefault();
     if (!canSave) {
-      setError("Each poll question needs a prompt, at least two answers, and one correct answer.");
+      setError("Each poll question needs a prompt and at least two answers.");
       return;
     }
     setIsSaving(true);
     setError("");
+    setCreatedLinks(null);
+
+    const hostToken = createHostToken();
+    const hostTokenHash = await hashToken(hostToken);
 
     const { data: poll, error: pollError } = await supabase
       .from("polls")
@@ -142,8 +142,7 @@ export default function CreatePage() {
           question_id: createdQuestion.id,
           label: answer.label.trim(),
           color: colors[index % colors.length],
-          shape: shapes[index % shapes.length],
-          is_correct: answer.isCorrect
+          shape: shapes[index % shapes.length]
         }));
     });
 
@@ -158,6 +157,7 @@ export default function CreatePage() {
     const { error: gameError } = await supabase.from("games").insert({
       poll_id: poll.id,
       code,
+      host_token_hash: hostTokenHash,
       status: "lobby"
     });
 
@@ -167,7 +167,13 @@ export default function CreatePage() {
       return;
     }
 
-    router.push(`/host/${code}`);
+    const origin = window.location.origin;
+    setCreatedLinks({
+      code,
+      participantUrl: `${origin}/${code}`,
+      hostUrl: `${origin}/host/${code}?token=${encodeURIComponent(hostToken)}`
+    });
+    setIsSaving(false);
   }
 
   function updateQuestion(index: number, patch: Partial<DraftQuestion>) {
@@ -190,6 +196,10 @@ export default function CreatePage() {
         };
       })
     );
+  }
+
+  async function copy(text: string) {
+    await navigator.clipboard.writeText(text);
   }
 
   async function downloadExcelTemplate() {
@@ -234,21 +244,19 @@ export default function CreatePage() {
 
     const header = rows[0].map((cell) => String(cell).trim().toLowerCase());
     const questionIndex = header.indexOf("question");
-    const correctIndex = header.indexOf("correct answer");
     const timeIndex = header.indexOf("time limit seconds");
     const backgroundIndex = header.indexOf("background image url");
     const answerIndexes = Array.from({ length: 10 }, (_, index) =>
       header.indexOf(`answer ${index + 1}`)
     );
 
-    if (questionIndex === -1 || correctIndex === -1 || answerIndexes.every((index) => index === -1)) {
-      setError("Template columns must include Question, Correct Answer, and Answer 1..10.");
+    if (questionIndex === -1 || answerIndexes.every((index) => index === -1)) {
+      setError("Template columns must include Question and Answer 1..10.");
       return;
     }
 
     const imported = rows.slice(1).map((row) => {
       const prompt = String(row[questionIndex] || "").trim();
-      const correct = String(row[correctIndex] || "").trim().toLowerCase();
       const answerLabels = answerIndexes
         .filter((index) => index !== -1)
         .map((index) => String(row[index] || "").trim())
@@ -265,27 +273,45 @@ export default function CreatePage() {
         prompt,
         backgroundImageUrl,
         timeLimitSeconds,
-        answers: answerLabels.map((label) => ({
-          label,
-          isCorrect: label.trim().toLowerCase() === correct
-        }))
+        answers: answerLabels.map((label) => ({ label }))
       };
     });
 
     const valid = imported.filter(
-      (question) =>
-        question.prompt &&
-        question.answers.length >= 2 &&
-        question.answers.some((answer) => answer.isCorrect)
+      (question) => question.prompt && question.answers.length >= 2
     );
 
     if (!valid.length) {
-      setError("No valid questions found. Make sure Correct Answer exactly matches one answer.");
+      setError("No valid questions found. Each poll question needs at least two answers.");
       return;
     }
 
     setQuestions(valid);
     setDesignReview(true);
+  }
+
+  if (createdLinks) {
+    return (
+      <main className="min-h-screen bg-fog px-4 py-6">
+        <section className="mx-auto max-w-xl rounded-[28px] bg-white p-6 shadow-soft">
+          <p className="text-sm font-black uppercase tracking-[0.18em] text-deloitteGreen">
+            Poll game created
+          </p>
+          <h1 className="mt-2 text-4xl font-black">PIN {createdLinks.code}</h1>
+          <div className="mt-6 grid gap-3">
+            <LinkCard title="Host control link" value={createdLinks.hostUrl} onCopy={copy} />
+            <LinkCard title="Participant link" value={createdLinks.participantUrl} onCopy={copy} />
+          </div>
+          <Link
+            href={createdLinks.hostUrl}
+            className="mt-5 flex h-14 items-center justify-center gap-2 rounded-2xl bg-deloitteGreen font-black text-ink"
+          >
+            Open host controls
+            <ExternalLink size={18} />
+          </Link>
+        </section>
+      </main>
+    );
   }
 
   return (
@@ -311,7 +337,7 @@ export default function CreatePage() {
                 <h2 className="text-xl font-black">Import from Excel</h2>
                 <p className="mt-1 text-sm font-medium text-slate-500">
                   Download the template, fill it in Excel, then upload it here. After upload,
-                  review backgrounds and styling before creating the poll game.
+                  review backgrounds and timers before creating the poll game.
                 </p>
               </div>
               <button
@@ -438,18 +464,6 @@ export default function CreatePage() {
                       className="h-12 w-full rounded-xl bg-slate-50 px-3 font-bold outline-none"
                       placeholder="Option text"
                     />
-                    <label className="mt-2 flex items-center gap-2 text-sm font-bold text-slate-600">
-                      <input
-                        type="checkbox"
-                        checked={answer.isCorrect}
-                        onChange={(event) =>
-                          updateAnswer(questionIndex, answerIndex, {
-                            isCorrect: event.target.checked
-                          })
-                        }
-                      />
-                      Correct answer
-                    </label>
                   </label>
                 ))}
               </div>
@@ -472,12 +486,46 @@ export default function CreatePage() {
             disabled={isSaving}
             className="h-14 flex-1 rounded-2xl bg-deloitteGreen px-5 text-lg font-black text-ink disabled:opacity-60"
           >
-            {isSaving ? "Creating..." : "Create and host"}
+            {isSaving ? "Creating..." : "Create poll game"}
           </button>
         </div>
       </form>
     </main>
   );
+}
+
+function LinkCard({ title, value, onCopy }: { title: string; value: string; onCopy: (value: string) => void }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <p className="text-sm font-black uppercase tracking-[0.12em] text-slate-500">{title}</p>
+      <p className="mt-2 break-all text-sm font-bold text-ink">{value}</p>
+      <button
+        type="button"
+        onClick={() => onCopy(value)}
+        className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-white font-black text-ink shadow-sm"
+      >
+        <Link2 size={17} />
+        Copy link
+      </button>
+    </div>
+  );
+}
+
+function createHostToken() {
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  return btoa(String.fromCharCode(...bytes))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+}
+
+async function hashToken(token: string) {
+  const bytes = new TextEncoder().encode(token);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 function csvCell(value: string) {
