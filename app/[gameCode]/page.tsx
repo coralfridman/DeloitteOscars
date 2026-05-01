@@ -71,12 +71,13 @@ export default function PlayerPage() {
 
   useEffect(() => {
     if (!game?.id) return;
+    const gameId = game.id;
 
     async function refreshPlayers() {
       const { data } = await supabase
         .from("players")
         .select("*")
-        .eq("game_id", game.id)
+        .eq("game_id", gameId)
         .order("score", { ascending: false });
       const rows = (data || []) as Player[];
       setPlayers(rows);
@@ -84,7 +85,7 @@ export default function PlayerPage() {
     }
 
     async function refreshSubmissions() {
-      const { data } = await supabase.from("submissions").select("*").eq("game_id", game.id);
+      const { data } = await supabase.from("submissions").select("*").eq("game_id", gameId);
       setSubmissions((data || []) as Submission[]);
     }
 
@@ -92,15 +93,15 @@ export default function PlayerPage() {
     refreshSubmissions();
 
     const channel = supabase
-      .channel(`player-room-${game.id}`)
+      .channel(`player-room-${gameId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "players", filter: `game_id=eq.${game.id}` },
+        { event: "*", schema: "public", table: "players", filter: `game_id=eq.${gameId}` },
         refreshPlayers
       )
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "submissions", filter: `game_id=eq.${game.id}` },
+        { event: "*", schema: "public", table: "submissions", filter: `game_id=eq.${gameId}` },
         refreshSubmissions
       )
       .subscribe();
@@ -239,7 +240,7 @@ export default function PlayerPage() {
           }
         >
           <p className="text-sm font-black uppercase tracking-[0.18em] text-deloitteGreen">
-            {player.name} · {player.score} participation points
+            {player.name} - {player.score} participation points
           </p>
           <h1 className="mt-3 text-3xl font-black leading-tight sm:text-5xl">
             {question.prompt}
@@ -296,7 +297,7 @@ function Results({
     <div className="grid gap-3">
       <div className="flex items-center gap-2 font-black text-slate-600">
         <BarChart3 size={18} />
-        Results · {total} total vote{total === 1 ? "" : "s"}
+        Results - {total} total vote{total === 1 ? "" : "s"}
       </div>
       {answers.map((answer) => {
         const count = submissions.filter((submission) => submission.answer_id === answer.id).length;
@@ -318,7 +319,7 @@ function Results({
             </div>
             <p className="mt-2 text-sm font-bold text-slate-500">
               {count} vote{count === 1 ? "" : "s"}
-              {selected ? " · your vote" : ""}
+              {selected ? " - your vote" : ""}
             </p>
           </div>
         );
