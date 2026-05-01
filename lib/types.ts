@@ -12,7 +12,6 @@ export type Question = {
   prompt: string;
   background_image_url: string | null;
   position: number;
-  time_limit_seconds: number;
 };
 
 export type Answer = {
@@ -30,7 +29,6 @@ export type Game = {
   host_token_hash: string;
   status: GameStatus;
   current_question_id: string | null;
-  question_started_at: string | null;
   created_at: string;
 };
 
