@@ -17,14 +17,14 @@ export function AnswerButton({
       disabled={disabled}
       onClick={onClick}
       className={clsx(
-        "flex min-h-28 w-full items-center gap-4 rounded-[24px] p-5 text-left text-white shadow-soft transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70",
+        "flex min-h-20 w-full items-center gap-3 rounded-2xl p-3 text-left text-white shadow-soft transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70",
         answerStyles[answer.color]
       )}
     >
-      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/20 text-3xl">
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/20 text-2xl">
         {shapeIcon[answer.shape]}
       </span>
-      <span className="text-2xl font-black leading-tight">{answer.label}</span>
+      <span className="text-xl font-black leading-tight">{answer.label}</span>
     </button>
   );
 }
