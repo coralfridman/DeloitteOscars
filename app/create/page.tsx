@@ -12,6 +12,7 @@ type DraftAnswer = {
 
 type DraftQuestion = {
   prompt: string;
+  description: string;
   backgroundImageUrl: string;
   answers: DraftAnswer[];
 };
@@ -26,6 +27,7 @@ const colors = ["red", "blue", "yellow", "green"] as const;
 const shapes = ["triangle", "diamond", "circle", "square"] as const;
 const templateHeaders = [
   "Question",
+  "Description",
   "Answer 1",
   "Answer 2",
   "Answer 3",
@@ -42,6 +44,7 @@ const templateHeaders = [
 function blankQuestion(): DraftQuestion {
   return {
     prompt: "",
+    description: "",
     backgroundImageUrl: "",
     answers: [{ label: "" }, { label: "" }, { label: "" }, { label: "" }]
   };
@@ -58,6 +61,7 @@ export default function CreatePage() {
     return [
       [
         "Who should win best team moment?",
+        "Choose the moment people will still talk about after the event.",
         "Launch day",
         "Client save",
         "All hands",
@@ -89,7 +93,7 @@ export default function CreatePage() {
   async function saveGame(event: FormEvent) {
     event.preventDefault();
     if (!canSave) {
-      setError("Each poll question needs a prompt and at least two answers.");
+      setError("Each poll question needs a title and at least two answers.");
       return;
     }
     setIsSaving(true);
@@ -114,6 +118,7 @@ export default function CreatePage() {
     const questionRows = questions.map((question, index) => ({
       poll_id: poll.id,
       prompt: question.prompt.trim(),
+      description: question.description.trim() || null,
       background_image_url: question.backgroundImageUrl.trim() || null,
       position: index
     }));
@@ -239,6 +244,7 @@ export default function CreatePage() {
 
     const header = rows[0].map((cell) => String(cell).trim().toLowerCase());
     const questionIndex = header.indexOf("question");
+    const descriptionIndex = header.indexOf("description");
     const backgroundIndex = header.indexOf("background image url");
     const answerIndexes = Array.from({ length: 10 }, (_, index) =>
       header.indexOf(`answer ${index + 1}`)
@@ -251,6 +257,8 @@ export default function CreatePage() {
 
     const imported = rows.slice(1).map((row) => {
       const prompt = String(row[questionIndex] || "").trim();
+      const description =
+        descriptionIndex === -1 ? "" : String(row[descriptionIndex] || "").trim();
       const answerLabels = answerIndexes
         .filter((index) => index !== -1)
         .map((index) => String(row[index] || "").trim())
@@ -261,6 +269,7 @@ export default function CreatePage() {
 
       return {
         prompt,
+        description,
         backgroundImageUrl,
         answers: answerLabels.map((label) => ({ label }))
       };
@@ -326,7 +335,7 @@ export default function CreatePage() {
                 <h2 className="text-xl font-black">Import from Excel</h2>
                 <p className="mt-1 text-sm font-medium text-slate-500">
                   Download the template, fill it in Excel, then upload it here. After upload,
-                  review backgrounds before creating the poll game.
+                  review descriptions and backgrounds before creating the poll game.
                 </p>
               </div>
               <button
@@ -367,7 +376,7 @@ export default function CreatePage() {
               </p>
               <h2 className="mt-1 text-2xl font-black">Review imported questions</h2>
               <p className="mt-1 text-sm font-medium text-slate-500">
-                Add or replace background image URLs, then create the poll game.
+                Add or replace descriptions and background image URLs, then create the poll game.
               </p>
             </section>
           )}
@@ -391,12 +400,24 @@ export default function CreatePage() {
                   </button>
                 )}
               </div>
-              <textarea
-                value={question.prompt}
-                onChange={(event) => updateQuestion(questionIndex, { prompt: event.target.value })}
-                className="mt-4 min-h-24 w-full rounded-2xl border-2 border-slate-200 p-4 text-lg font-bold outline-none focus:border-deloitteGreen"
-                placeholder="Ask a question..."
-              />
+              <label className="mt-4 block text-sm font-bold text-slate-500">
+                Question title
+                <textarea
+                  value={question.prompt}
+                  onChange={(event) => updateQuestion(questionIndex, { prompt: event.target.value })}
+                  className="mt-1 min-h-20 w-full rounded-2xl border-2 border-slate-200 p-4 text-lg font-bold text-ink outline-none focus:border-deloitteGreen"
+                  placeholder="Best dressed"
+                />
+              </label>
+              <label className="mt-3 block text-sm font-bold text-slate-500">
+                Description
+                <textarea
+                  value={question.description}
+                  onChange={(event) => updateQuestion(questionIndex, { description: event.target.value })}
+                  className="mt-1 min-h-20 w-full rounded-2xl border border-slate-200 p-4 text-base font-medium text-ink outline-none focus:border-deloitteGreen"
+                  placeholder="Add context so participants understand what they are voting on."
+                />
+              </label>
               <label className="mt-3 block text-sm font-bold text-slate-500">
                 Background image URL
                 <input
@@ -410,7 +431,7 @@ export default function CreatePage() {
               </label>
               {question.backgroundImageUrl && (
                 <div
-                  className="mt-3 min-h-44 rounded-2xl bg-cover bg-center p-4 text-white shadow-inner"
+                  className="mt-3 min-h-52 rounded-2xl bg-cover bg-center p-4 text-white shadow-inner"
                   style={{
                     backgroundImage: `linear-gradient(rgba(0,0,0,.34), rgba(0,0,0,.34)), url(${question.backgroundImageUrl})`
                   }}
@@ -419,6 +440,11 @@ export default function CreatePage() {
                   <p className="mt-12 text-2xl font-black">
                     {question.prompt || "Question preview"}
                   </p>
+                  {question.description && (
+                    <p className="mt-2 max-w-2xl text-sm font-bold text-white/85">
+                      {question.description}
+                    </p>
+                  )}
                 </div>
               )}
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
