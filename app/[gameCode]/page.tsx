@@ -255,11 +255,11 @@ export default function PlayerPage() {
     <main className="min-h-screen bg-fog px-4 py-5">
       <section className="mx-auto max-w-4xl">
         <div
-          className="rounded-[28px] bg-ink bg-cover bg-center p-5 text-white shadow-soft sm:p-7"
+          className="flex min-h-72 flex-col justify-end rounded-[28px] bg-ink bg-cover bg-center p-5 text-white shadow-soft sm:min-h-80 sm:p-7"
           style={
             question.background_image_url
               ? {
-                  backgroundImage: `linear-gradient(rgba(22,24,33,.72), rgba(22,24,33,.72)), url(${question.background_image_url})`
+                  backgroundImage: `linear-gradient(rgba(22,24,33,.68), rgba(22,24,33,.68)), url(${question.background_image_url})`
                 }
               : undefined
           }
@@ -270,10 +270,15 @@ export default function PlayerPage() {
           <h1 className="mt-3 text-3xl font-black leading-tight sm:text-5xl">
             {question.prompt}
           </h1>
+          {question.description && (
+            <p className="mt-3 max-w-2xl text-base font-bold leading-relaxed text-white/85 sm:text-lg">
+              {question.description}
+            </p>
+          )}
         </div>
 
         {game.status === "voting" && playerSubmission && (
-          <div className="mt-5 rounded-[28px] bg-white p-7 text-center shadow-soft">
+          <div className="mt-4 rounded-[28px] bg-white p-7 text-center shadow-soft">
             <h2 className="text-4xl font-black">Vote locked</h2>
             <p className="mt-2 text-slate-500">Waiting for the host to reveal results.</p>
             <p className="mt-4 text-2xl font-black text-deloitteGreen">
@@ -283,7 +288,7 @@ export default function PlayerPage() {
         )}
 
         {game.status === "voting" && !playerSubmission && (
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {question.answers.map((answer) => (
               <AnswerButton
                 key={answer.id}
