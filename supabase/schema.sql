@@ -24,6 +24,7 @@ create table public.questions (
   id uuid primary key default gen_random_uuid(),
   poll_id uuid not null references public.polls(id) on delete cascade,
   prompt text not null,
+  description text,
   background_image_url text,
   position int not null,
   created_at timestamptz not null default now()
