@@ -274,11 +274,11 @@ function QuestionCard({
 }) {
   return (
     <div
-      className="rounded-[28px] bg-white bg-cover bg-center p-6 shadow-soft"
+      className="min-h-56 rounded-[28px] bg-white bg-cover bg-center p-6 shadow-soft"
       style={
         question.background_image_url
           ? {
-              backgroundImage: `linear-gradient(rgba(255,255,255,.9), rgba(255,255,255,.9)), url(${question.background_image_url})`
+              backgroundImage: `linear-gradient(rgba(255,255,255,.88), rgba(255,255,255,.88)), url(${question.background_image_url})`
             }
           : undefined
       }
@@ -287,6 +287,11 @@ function QuestionCard({
         Question {index + 1} / {total}
       </p>
       <h1 className="mt-3 text-4xl font-black leading-tight">{question.prompt}</h1>
+      {question.description && (
+        <p className="mt-3 text-base font-bold leading-relaxed text-slate-600">
+          {question.description}
+        </p>
+      )}
       <div className="mt-6">{children}</div>
     </div>
   );
