@@ -5,6 +5,7 @@ A mobile-first real-time poll game built with Next.js 15, Tailwind CSS, and Supa
 This is the product direction:
 
 - Host creates a multi-question poll game from a phone or laptop.
+- Each poll question can include a title, optional description, answers, and a background image.
 - The app generates a public participant link/PIN and a private host control link.
 - Participants join from their own phones and vote once per poll question.
 - The host opens voting, reveals results, and advances questions from a mobile control panel.
@@ -27,10 +28,11 @@ The create screen can download an Excel template, then import completed `.xlsx`,
 Template columns:
 
 - `Question`
+- `Description`
 - `Answer 1` through `Answer 10`
 - `Background Image URL`
 
-After bulk upload, the creator stays on `/create` in a design review state to edit question text, answers, and background images before hosting.
+After bulk upload, the creator stays on `/create` in a design review state to edit question text, descriptions, answers, and background images before hosting.
 
 ## Setup
 
