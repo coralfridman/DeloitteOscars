@@ -10,6 +10,7 @@ export type Question = {
   id: string;
   poll_id: string;
   prompt: string;
+  description: string | null;
   background_image_url: string | null;
   position: number;
 };
