@@ -32,6 +32,11 @@ export function FinalResults({
                 Poll {index + 1}
               </p>
               <h3 className="mt-1 text-xl font-black leading-tight text-ink">{question.prompt}</h3>
+              {question.description && (
+                <p className="mt-2 text-sm font-bold leading-relaxed text-slate-500">
+                  {question.description}
+                </p>
+              )}
               {winners.length > 0 ? (
                 <p className="mt-3 text-2xl font-black text-deloitteGreen">
                   {winners.map((winner) => winner.answer.label).join(" / ")}
